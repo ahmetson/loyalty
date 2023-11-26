@@ -7,6 +7,7 @@ pragma solidity ^0.8.9;
 contract Loyalty {
     uint public unlockTime;
     address public owner;
+    mapping(address => bool) public shops;
 
     struct Product {
         uint loyaltyPoints;
@@ -17,10 +18,25 @@ contract Loyalty {
     mapping(address => mapping(address => uint)) public loyaltyPoints;
     mapping(address => mapping(uint => uint)) public productExpiration;
 
+    event AnnounceLoyaltyPoints(address indexed shop, address indexed user, bytes32 receiptId, uint points, string dataFormat);
     event SubmitPersonalData(address shop, bytes32 receiptId, string userData);
+
+    modifier onlyShop() {
+        require(shops[msg.sender], "not_shop");
+        _;
+    }
 
     constructor() {
         owner = msg.sender;
+    }
+
+    // The Shop announces a new exchange for the user data.
+    // @user who is receiving the loyalty points
+    // @receiptId is the event id that loyalty points given for. It's off-chain event id.
+    // @points amount of loyalty points user receives
+    // @dataFormat the credential type the shop is asking for.
+    function announceLoyaltyPoints(address user, bytes32 receiptId, uint points, string calldata dataFormat) external onlyShop {
+        emit AnnounceLoyaltyPoints(msg.sender, user, receiptId, points, dataFormat);
     }
 
     // Submit Data as a zero-knowledge
