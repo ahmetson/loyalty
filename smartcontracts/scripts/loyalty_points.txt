@@ -1,0 +1,21 @@
+const url = "https://loyalty-demo-shop-c06971dc3b2c.herokuapp.com/shop/price/";
+const productId = args[0];
+
+const apiResponse = await Functions.makeHttpRequest({
+    url: url + productId,
+    method: "GET"
+})
+
+
+if (apiResponse.error) {
+    throw Error(`Request failed: ${apiResponse.message}`)
+}
+
+const { data } = apiResponse;
+if (data.error) {
+    throw Error(`Server error: ${data.error}`);
+}
+
+const loyaltyPoint = data.loyalty_point;
+
+return Functions.encodeUint256(loyaltyPoint);
