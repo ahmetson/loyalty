@@ -5,6 +5,11 @@ pragma solidity ^0.8.9;
 // import "hardhat/console.sol";
 
 contract Loyalty {
+    // init right after announcement.
+    // user may reject or submit the data.
+    // the confirmed is added by the company.
+    enum ExchangeStatus{ INIT, REJECT, SUBMIT, CONFIRMED }
+
     uint public unlockTime;
     address public owner;
     mapping(address => bool) public shops;
@@ -14,9 +19,17 @@ contract Loyalty {
         uint expiry;
     }
 
+    struct Exchange {
+        address user;
+        uint points;
+        string dataFormat;
+        ExchangeStatus status;
+    }
+
     // Company -> user -> loyalty points
     mapping(address => mapping(address => uint)) public loyaltyPoints;
     mapping(address => mapping(uint => uint)) public productExpiration;
+    mapping(address => mapping(bytes32 => Exchange)) public exchanges; // exchange the data for a loyalty points
 
     event AnnounceLoyaltyPoints(address indexed shop, address indexed user, bytes32 receiptId, uint points, string dataFormat);
     event SubmitPersonalData(address shop, bytes32 receiptId, string userData);
@@ -55,6 +68,13 @@ contract Loyalty {
     // @points amount of loyalty points user receives
     // @dataFormat the credential type the shop is asking for.
     function announceLoyaltyPoints(address user, bytes32 receiptId, uint points, string calldata dataFormat) external onlyShop {
+        require(user != address(0), "empty_user");
+        require(receiptId > 0, "receipt_id = 0");
+        require(points > 0, "0 points");
+        require(exchanges[msg.sender][receiptId].user == address(0), "exchange exist");
+
+        exchanges[msg.sender][receiptId] = Exchange(user, points, dataFormat, ExchangeStatus.INIT);
+
         emit AnnounceLoyaltyPoints(msg.sender, user, receiptId, points, dataFormat);
     }
 
@@ -63,6 +83,13 @@ contract Loyalty {
     // @receiptId bytes32 a payment receipt id
     // @userData is the zero-knowledge proof the user parameters in JSON format.
     function submitPersonalData(address shop, bytes32 receiptId, string calldata userData) external {
+        require(exchanges[shop][receiptId].user == msg.sender, "not_authorized");
+        require(exchanges[shop][receiptId].status == ExchangeStatus.INIT, "invalid_status");
+
+        exchanges[shop][receiptId].status = ExchangeStatus.SUBMIT;
+
+        // Todo send the data to a chainlink
+
         emit SubmitPersonalData(shop, receiptId, userData);
     }
 }
