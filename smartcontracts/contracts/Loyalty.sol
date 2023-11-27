@@ -3,14 +3,13 @@ pragma solidity ^0.8.9;
 
 import "./Ownable.sol";
 import "./Credential.sol";
+import "./Shop.sol";
 
-contract Loyalty is Ownable, Credential {
+contract Loyalty is Ownable, Credential, Shop {
     // init right after announcement.
     // user may reject or submit the data.
     // the confirmed is added by the company.
     enum ExchangeStatus{ INIT, REJECT, SUBMIT, CONFIRMED }
-
-    mapping(address => bool) public shops;
 
     struct Exchange {
         address user;
@@ -29,26 +28,7 @@ contract Loyalty is Ownable, Credential {
     event SubmitPersonalData(address shop, address user, bytes32 receiptId);
     event RejectExchange(address shop, address user, bytes32 receiptId);
 
-    modifier onlyShop() {
-        require(shops[msg.sender], "not_shop");
-        _;
-    }
-
     constructor() Ownable(msg.sender) {}
-
-    // Todo later we will add a fee mechanism for the Loyalty Service.
-    function addShop(address shop) external onlyOwner {
-        shops[shop] = true;
-    }
-
-    function removeShop(address shop) external onlyOwner {
-        delete shops[shop];
-    }
-
-    // Shops can remove themselves.
-    function removeShop() external onlyShop {
-        delete shops[msg.sender];
-    }
 
     // The Shop announces a new exchange for the user data.
     // @user who is receiving the loyalty points
