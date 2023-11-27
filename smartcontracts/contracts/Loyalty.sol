@@ -22,16 +22,20 @@ contract Loyalty {
     struct Exchange {
         address user;
         uint points;
-        string dataFormat;
+        uint64 dataFormatId;
         ExchangeStatus status;
     }
+
+    uint64 public dataFormatAmount;
 
     // Company -> user -> loyalty points
     mapping(address => mapping(address => uint)) public loyaltyPoints;
     mapping(address => mapping(uint => uint)) public productExpiration;
-    mapping(address => mapping(bytes32 => Exchange)) public exchanges; // exchange the data for a loyalty points
+    mapping(uint64 => bytes) public dataFormats;
+    // exchange the data for a loyalty points
+    mapping(address => mapping(bytes32 => Exchange)) public exchanges;
 
-    event AnnounceLoyaltyPoints(address indexed shop, address indexed user, bytes32 receiptId, uint points, string dataFormat);
+    event AnnounceLoyaltyPoints(address indexed shop, address indexed user, bytes32 receiptId, uint points, uint64 dataFormatId);
     event SubmitPersonalData(address shop, address user, bytes32 receiptId);
     event RejectExchange(address shop, address user, bytes32 receiptId);
 
@@ -63,20 +67,31 @@ contract Loyalty {
         delete shops[msg.sender];
     }
 
+    function addDataFormat(bytes calldata dataFormat) external onlyOwner {
+        dataFormatAmount++;
+        dataFormats[dataFormatAmount] = dataFormat;
+    }
+
+    function deleteDataFormat(uint64 dataFormatId) external onlyOwner {
+        require(dataFormats[dataFormatId].length > 0, "not_found");
+        delete dataFormats[dataFormatId];
+    }
+
+
     // The Shop announces a new exchange for the user data.
     // @user who is receiving the loyalty points
     // @receiptId is the event id that loyalty points given for. It's off-chain event id.
     // @points amount of loyalty points user receives
-    // @dataFormat the credential type the shop is asking for.
-    function announceLoyaltyPoints(address user, bytes32 receiptId, uint points, string calldata dataFormat) external onlyShop {
+    // @dataFormatId the credential type the shop is asking for.
+    function announceLoyaltyPoints(address user, bytes32 receiptId, uint points, uint64 dataFormatId) external onlyShop {
         require(user != address(0), "empty_user");
         require(receiptId > 0, "receipt_id = 0");
         require(points > 0, "0 points");
         require(exchanges[msg.sender][receiptId].user == address(0), "exchange exist");
 
-        exchanges[msg.sender][receiptId] = Exchange(user, points, dataFormat, ExchangeStatus.INIT);
+        exchanges[msg.sender][receiptId] = Exchange(user, points, dataFormatId, ExchangeStatus.INIT);
 
-        emit AnnounceLoyaltyPoints(msg.sender, user, receiptId, points, dataFormat);
+        emit AnnounceLoyaltyPoints(msg.sender, user, receiptId, points, dataFormatId);
     }
 
     // Submit Data as a zero-knowledge
