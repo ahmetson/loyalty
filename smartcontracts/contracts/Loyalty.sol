@@ -83,7 +83,7 @@ contract Loyalty {
     // @shop address of the shop
     // @receiptId bytes32 a receipt id to identify order in off-chain
     // @userData is the zero-knowledge proof the user parameters in JSON format.
-    function submitPersonalData(address shop, bytes32 receiptId, string calldata userData) external {
+    function submitPersonalData(address shop, bytes32 receiptId, string calldata) external {
         require(exchanges[shop][receiptId].user == msg.sender, "not_authorized");
         require(exchanges[shop][receiptId].status == ExchangeStatus.INIT, "invalid_status");
 
