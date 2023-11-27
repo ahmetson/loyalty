@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config({path: '../.env'});
 
 import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox-viem";
+import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-verify";
 import "hardhat-abi-exporter"
 

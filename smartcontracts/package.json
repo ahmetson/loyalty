@@ -13,10 +13,13 @@
   "author": "Medet Ahmetson <milayter@gmail.com>",
   "license": "ISC",
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox-viem": "^2.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.1",
     "dotenv": "^16.3.1",
     "hardhat": "^2.19.1",
     "hardhat-abi-exporter": "^2.10.1"
+  },
+  "dependencies": {
+    "@chainlink/contracts": "^0.8.0",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0"
   }
 }
