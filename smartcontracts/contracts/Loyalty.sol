@@ -26,8 +26,8 @@ contract Loyalty {
     // Company -> user -> loyalty points
     mapping(address => mapping(address => uint)) public loyaltyPoints;
     mapping(address => mapping(uint => uint)) public productExpiration;
-    mapping(uint64 => string) public credentialSchemaUrls;
-    mapping(uint64 => string) public credentialTypes;
+    mapping(uint64 => bytes) public credentialSchemaUrls;
+    mapping(uint64 => bytes) public credentialTypes;
     mapping(bytes32 => uint64) public credentialUniqueness; // avoid adding duplicate credentials
     // exchange the data for a loyalty points
     mapping(address => mapping(bytes32 => Exchange)) public exchanges;
@@ -70,14 +70,14 @@ contract Loyalty {
     //
     // The credential type is as it's defined in Polygon ID.
     // For example: 'KYCAgeCredential'
-    function addCredential(string calldata schemaUrl, string calldata credentialType) external onlyOwner {
-        require(bytes(schemaUrl).length > 0, "empty schema url");
-        require(bytes(credentialType).length > 0, "empty credential type");
+    function addCredential(bytes calldata schemaUrl, bytes calldata credentialType) external onlyOwner {
+        require(schemaUrl.length > 0, "empty schema url");
+        require(credentialType.length > 0, "empty credential type");
 
-        bytes32 uniqueType = keccak256(bytes(credentialType));
+        bytes32 uniqueType = keccak256(credentialType);
         require(credentialUniqueness[uniqueType] == 0, "credential type exists");
 
-        bytes32 uniqueSchemaUrl = keccak256(bytes(schemaUrl));
+        bytes32 uniqueSchemaUrl = keccak256(schemaUrl);
         require(credentialUniqueness[uniqueSchemaUrl] == 0, "credential schema url exists");
 
         credentialTypeAmount++;
@@ -94,8 +94,8 @@ contract Loyalty {
         require(credentialId > 0 && credentialId < credentialTypeAmount, "out of range");
         require(bytes(credentialSchemaUrls[credentialId]).length > 0, "not found");
 
-        bytes32 uniqueType = keccak256(bytes(credentialTypes[credentialId]));
-        bytes32 uniqueSchemaUrl = keccak256(bytes(credentialSchemaUrls[credentialId]));
+        bytes32 uniqueType = keccak256(credentialTypes[credentialId]);
+        bytes32 uniqueSchemaUrl = keccak256(credentialSchemaUrls[credentialId]);
 
         delete credentialUniqueness[uniqueType];
         delete credentialUniqueness[uniqueSchemaUrl];
