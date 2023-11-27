@@ -14,11 +14,6 @@ contract Loyalty {
     address public owner;
     mapping(address => bool) public shops;
 
-    struct Product {
-        uint loyaltyPoints;
-        uint expiry;
-    }
-
     struct Exchange {
         address user;
         uint points;
