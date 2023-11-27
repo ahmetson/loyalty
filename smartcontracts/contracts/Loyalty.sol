@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-// Uncomment this line to use console.log
-// import "hardhat/console.sol";
+import "./Ownable.sol";
 
-contract Loyalty {
+contract Loyalty is Ownable {
     // init right after announcement.
     // user may reject or submit the data.
     // the confirmed is added by the company.
     enum ExchangeStatus{ INIT, REJECT, SUBMIT, CONFIRMED }
 
-    address public owner;
     mapping(address => bool) public shops;
 
     struct Exchange {
@@ -36,19 +34,18 @@ contract Loyalty {
     event SubmitPersonalData(address shop, address user, bytes32 receiptId);
     event RejectExchange(address shop, address user, bytes32 receiptId);
 
-    modifier onlyOwner() {
-        require(msg.sender == owner);
-        _;
-    }
-
     modifier onlyShop() {
         require(shops[msg.sender], "not_shop");
         _;
     }
 
-    constructor() {
-        owner = msg.sender;
+    modifier validCredentialId(uint64 credentialId) {
+        require(credentialId > 0 && credentialId <= credentialTypeAmount, "credential: out of range");
+        require(credentialTypes[credentialId].length > 0, "credential: not found");
+        _;
     }
+
+    constructor() Ownable(msg.sender) {}
 
     // Todo later we will add a fee mechanism for the Loyalty Service.
     function addShop(address shop) external onlyOwner {
