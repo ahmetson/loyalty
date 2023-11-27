@@ -10,7 +10,6 @@ contract Loyalty {
     // the confirmed is added by the company.
     enum ExchangeStatus{ INIT, REJECT, SUBMIT, CONFIRMED }
 
-    uint public unlockTime;
     address public owner;
     mapping(address => bool) public shops;
 
