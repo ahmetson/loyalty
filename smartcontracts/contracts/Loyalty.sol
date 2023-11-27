@@ -2,8 +2,9 @@
 pragma solidity ^0.8.9;
 
 import "./Ownable.sol";
+import "./Credential.sol";
 
-contract Loyalty is Ownable {
+contract Loyalty is Ownable, Credential {
     // init right after announcement.
     // user may reject or submit the data.
     // the confirmed is added by the company.
@@ -18,30 +19,18 @@ contract Loyalty is Ownable {
         ExchangeStatus status;
     }
 
-    uint64 public credentialTypeAmount;
-
     // Company -> user -> loyalty points
     mapping(address => mapping(address => uint)) public loyaltyPoints;
     mapping(address => mapping(uint => uint)) public productExpiration;
-    mapping(uint64 => bytes) public credentialSchemaUrls;
-    mapping(uint64 => bytes) public credentialTypes;
-    mapping(bytes32 => uint64) public credentialUniqueness; // avoid adding duplicate credentials
     // exchange the data for a loyalty points
     mapping(address => mapping(bytes32 => Exchange)) public exchanges;
 
-    event AddCredential(uint64 indexed credentialId);
     event AnnounceLoyaltyPoints(address indexed shop, address indexed user, bytes32 receiptId, uint points, uint64 dataFormatId);
     event SubmitPersonalData(address shop, address user, bytes32 receiptId);
     event RejectExchange(address shop, address user, bytes32 receiptId);
 
     modifier onlyShop() {
         require(shops[msg.sender], "not_shop");
-        _;
-    }
-
-    modifier validCredentialId(uint64 credentialId) {
-        require(credentialId > 0 && credentialId <= credentialTypeAmount, "credential: out of range");
-        require(credentialTypes[credentialId].length > 0, "credential: not found");
         _;
     }
 
@@ -61,59 +50,20 @@ contract Loyalty is Ownable {
         delete shops[msg.sender];
     }
 
-    // Schema URL is based on the iden3 schema:
-    // github.com/iden3/claim-schema-vocab/
-    //
-    // The credential type is as it's defined in Polygon ID.
-    // For example: 'KYCAgeCredential'
-    function addCredential(bytes calldata schemaUrl, bytes calldata credentialType) external onlyOwner {
-        require(schemaUrl.length > 0, "empty schema url");
-        require(credentialType.length > 0, "empty credential type");
-
-        bytes32 uniqueType = keccak256(credentialType);
-        require(credentialUniqueness[uniqueType] == 0, "credential type exists");
-
-        bytes32 uniqueSchemaUrl = keccak256(schemaUrl);
-        require(credentialUniqueness[uniqueSchemaUrl] == 0, "credential schema url exists");
-
-        credentialTypeAmount++;
-        credentialUniqueness[uniqueType] = credentialTypeAmount;
-        credentialUniqueness[uniqueSchemaUrl] = credentialTypeAmount;
-
-        credentialSchemaUrls[credentialTypeAmount] = schemaUrl;
-        credentialTypes[credentialTypeAmount] = credentialType;
-
-        emit AddCredential(credentialTypeAmount);
-    }
-
-    function deleteCredential(uint64 credentialId) external onlyOwner {
-        require(credentialId > 0 && credentialId < credentialTypeAmount, "out of range");
-        require(bytes(credentialSchemaUrls[credentialId]).length > 0, "not found");
-
-        bytes32 uniqueType = keccak256(credentialTypes[credentialId]);
-        bytes32 uniqueSchemaUrl = keccak256(credentialSchemaUrls[credentialId]);
-
-        delete credentialUniqueness[uniqueType];
-        delete credentialUniqueness[uniqueSchemaUrl];
-        delete credentialSchemaUrls[credentialId];
-        delete credentialTypes[credentialId];
-    }
-
-
     // The Shop announces a new exchange for the user data.
     // @user who is receiving the loyalty points
     // @receiptId is the event id that loyalty points given for. It's off-chain event id.
     // @points amount of loyalty points user receives
     // @dataFormatId the credential type the shop is asking for.
-    function announceLoyaltyPoints(address user, bytes32 receiptId, uint points, uint64 dataFormatId) external onlyShop {
+    function announceLoyaltyPoints(address user, bytes32 receiptId, uint points, uint64 credentialId) external onlyShop validCredentialId(credentialId) {
         require(user != address(0), "empty_user");
         require(receiptId > 0, "receipt_id = 0");
         require(points > 0, "0 points");
         require(exchanges[msg.sender][receiptId].user == address(0), "exchange exist");
 
-        exchanges[msg.sender][receiptId] = Exchange(user, points, dataFormatId, ExchangeStatus.INIT);
+        exchanges[msg.sender][receiptId] = Exchange(user, points, credentialId, ExchangeStatus.INIT);
 
-        emit AnnounceLoyaltyPoints(msg.sender, user, receiptId, points, dataFormatId);
+        emit AnnounceLoyaltyPoints(msg.sender, user, receiptId, points, credentialId);
     }
 
     // Submit Data as a zero-knowledge
