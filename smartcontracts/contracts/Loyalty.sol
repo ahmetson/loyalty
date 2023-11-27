@@ -32,7 +32,7 @@ contract Loyalty {
     mapping(address => mapping(bytes32 => Exchange)) public exchanges; // exchange the data for a loyalty points
 
     event AnnounceLoyaltyPoints(address indexed shop, address indexed user, bytes32 receiptId, uint points, string dataFormat);
-    event SubmitPersonalData(address shop, bytes32 receiptId, string userData);
+    event SubmitPersonalData(address shop, address user, bytes32 receiptId);
 
     modifier onlyOwner() {
         require(msg.sender == owner);
@@ -80,7 +80,7 @@ contract Loyalty {
 
     // Submit Data as a zero-knowledge
     // @shop address of the shop
-    // @receiptId bytes32 a payment receipt id
+    // @receiptId bytes32 a receipt id to identify order in off-chain
     // @userData is the zero-knowledge proof the user parameters in JSON format.
     function submitPersonalData(address shop, bytes32 receiptId, string calldata userData) external {
         require(exchanges[shop][receiptId].user == msg.sender, "not_authorized");
@@ -90,6 +90,6 @@ contract Loyalty {
 
         // Todo send the data to a chainlink
 
-        emit SubmitPersonalData(shop, receiptId, userData);
+        emit SubmitPersonalData(shop, msg.sender, receiptId);
     }
 }
