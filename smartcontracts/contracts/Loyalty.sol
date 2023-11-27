@@ -33,6 +33,7 @@ contract Loyalty {
 
     event AnnounceLoyaltyPoints(address indexed shop, address indexed user, bytes32 receiptId, uint points, string dataFormat);
     event SubmitPersonalData(address shop, address user, bytes32 receiptId);
+    event RejectExchange(address shop, address user, bytes32 receiptId);
 
     modifier onlyOwner() {
         require(msg.sender == owner);
@@ -91,5 +92,17 @@ contract Loyalty {
         // Todo send the data to a chainlink
 
         emit SubmitPersonalData(shop, msg.sender, receiptId);
+    }
+
+    // User rejects the exchange. No explanation of the reason.
+    // @shop address of the shop
+    // @receiptId bytes32 a receipt id to identify order in off-chain
+    function rejectExchange(address shop, bytes32 receiptId) external {
+        require(exchanges[shop][receiptId].user == msg.sender, "not_authorized");
+        require(exchanges[shop][receiptId].status == ExchangeStatus.INIT, "invalid_status");
+
+        exchanges[shop][receiptId].status = ExchangeStatus.REJECT;
+
+        emit RejectExchange(shop, msg.sender, receiptId);
     }
 }
