@@ -21,15 +21,18 @@ contract Loyalty {
         ExchangeStatus status;
     }
 
-    uint64 public dataFormatAmount;
+    uint64 public credentialTypeAmount;
 
     // Company -> user -> loyalty points
     mapping(address => mapping(address => uint)) public loyaltyPoints;
     mapping(address => mapping(uint => uint)) public productExpiration;
-    mapping(uint64 => bytes) public dataFormats;
+    mapping(uint64 => string) public credentialSchemaUrls;
+    mapping(uint64 => string) public credentialTypes;
+    mapping(bytes32 => uint64) public credentialUniqueness; // avoid adding duplicate credentials
     // exchange the data for a loyalty points
     mapping(address => mapping(bytes32 => Exchange)) public exchanges;
 
+    event AddCredential(uint64 indexed credentialId);
     event AnnounceLoyaltyPoints(address indexed shop, address indexed user, bytes32 receiptId, uint points, uint64 dataFormatId);
     event SubmitPersonalData(address shop, address user, bytes32 receiptId);
     event RejectExchange(address shop, address user, bytes32 receiptId);
@@ -62,14 +65,42 @@ contract Loyalty {
         delete shops[msg.sender];
     }
 
-    function addDataFormat(bytes calldata dataFormat) external onlyOwner {
-        dataFormatAmount++;
-        dataFormats[dataFormatAmount] = dataFormat;
+    // Schema URL is based on the iden3 schema:
+    // github.com/iden3/claim-schema-vocab/
+    //
+    // The credential type is as it's defined in Polygon ID.
+    // For example: 'KYCAgeCredential'
+    function addCredential(string calldata schemaUrl, string calldata credentialType) external onlyOwner {
+        require(bytes(schemaUrl).length > 0, "empty schema url");
+        require(bytes(credentialType).length > 0, "empty credential type");
+
+        bytes32 uniqueType = keccak256(bytes(credentialType));
+        require(credentialUniqueness[uniqueType] == 0, "credential type exists");
+
+        bytes32 uniqueSchemaUrl = keccak256(bytes(schemaUrl));
+        require(credentialUniqueness[uniqueSchemaUrl] == 0, "credential schema url exists");
+
+        credentialTypeAmount++;
+        credentialUniqueness[uniqueType] = credentialTypeAmount;
+        credentialUniqueness[uniqueSchemaUrl] = credentialTypeAmount;
+
+        credentialSchemaUrls[credentialTypeAmount] = schemaUrl;
+        credentialTypes[credentialTypeAmount] = credentialType;
+
+        emit AddCredential(credentialTypeAmount);
     }
 
-    function deleteDataFormat(uint64 dataFormatId) external onlyOwner {
-        require(dataFormats[dataFormatId].length > 0, "not_found");
-        delete dataFormats[dataFormatId];
+    function deleteCredential(uint64 credentialId) external onlyOwner {
+        require(credentialId > 0 && credentialId < credentialTypeAmount, "out of range");
+        require(bytes(credentialSchemaUrls[credentialId]).length > 0, "not found");
+
+        bytes32 uniqueType = keccak256(bytes(credentialTypes[credentialId]));
+        bytes32 uniqueSchemaUrl = keccak256(bytes(credentialSchemaUrls[credentialId]));
+
+        delete credentialUniqueness[uniqueType];
+        delete credentialUniqueness[uniqueSchemaUrl];
+        delete credentialSchemaUrls[credentialId];
+        delete credentialTypes[credentialId];
     }
 
 
