@@ -4,16 +4,16 @@ pragma solidity ^0.8.9;
 import "./Ownable.sol";
 
 abstract contract Shop is Ownable {
-    mapping(address => bool) public shops;
+    mapping(address => string) public shops;
 
     modifier onlyShop() {
-        require(shops[msg.sender], "not_shop");
+        require(bytes(shops[msg.sender]).length > 0, "shop not found");
         _;
     }
 
     // Todo later we will add a fee mechanism for the Loyalty Service.
-    function addShop(address shop) external onlyOwner {
-        shops[shop] = true;
+    function addShop(address shop, string calldata url) external onlyOwner {
+        shops[shop] = url;
     }
 
     function removeShop(address shop) external onlyOwner {
