@@ -91,10 +91,12 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring, Oracle {
     // @shop address of the shop
     // @receiptId bytes32 a receipt id to identify order in off-chain
     function rejectExchange(address shop, bytes32 receiptId) external {
-        require(exchanges[shop][receiptId].user == msg.sender, "not_authorized");
-        require(exchanges[shop][receiptId].status == ExchangeStatus.INIT, "invalid_status");
+        Exchange storage exchange = exchanges[shop][receiptId];
 
-        exchanges[shop][receiptId].status = ExchangeStatus.REJECT;
+        require(exchange.user == msg.sender, "not_authorized");
+        require(exchange.status == ExchangeStatus.INIT, "invalid_status");
+
+        exchange.status = ExchangeStatus.REJECT;
 
         emit RejectExchange(shop, msg.sender, receiptId);
     }
