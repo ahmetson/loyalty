@@ -19,6 +19,8 @@ async function main() {
   console.log(`\t1. Verify the contract calling 'npx hardhat verify --network ${network.name} ${loyaltyAddr}'`);
   console.log(`\t2. Set the JS function calling 'npx hardhat verify --network ${network.name} scripts/set_js_in_loyalty.ts'`);
   console.log(`\t3. Add the smartcontract as the consumer in the Chainlink function: https://functions.chain.link/sepolia/1705`);
+  console.log(`\t4. Export ABI using 'npx hardhat export-abi'`);
+  console.log(`\t5. Update README to show the deployed smartcontracts for publicity`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
