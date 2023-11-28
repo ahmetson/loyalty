@@ -4,9 +4,11 @@ pragma solidity ^0.8.9;
 import "./Ownable.sol";
 import "./Credential.sol";
 import "./Shop.sol";
+import "./Oracle.sol";
+import "./Hex.sol";
 import "@turkmenson/user-caring/contracts/UserCaring.sol";
 
-contract Loyalty is Ownable, Credential, Shop, UserCaring {
+contract Loyalty is Ownable, Credential, Shop, UserCaring, Oracle {
     // init right after announcement.
     // user may reject or submit the data.
     // the confirmed is added by the company.
@@ -15,8 +17,9 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring {
     struct Exchange {
         address user;
         uint points;
-        uint64 dataFormatId;
+        uint64 credentialId;
         ExchangeStatus status;
+        bytes32 requestId;
     }
 
     // Company -> user -> loyalty points
@@ -28,7 +31,14 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring {
     event SubmitPersonalData(address shop, address user, bytes32 receiptId);
     event RejectExchange(address shop, address user, bytes32 receiptId);
 
-    constructor() Ownable(msg.sender) UserCaring(0x78220f1C11D91f9B5F21536125201bD1aE5CC676) {}
+    // router for sepolia 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0. See the
+    // https://docs.chain.link/chainlink-functions/supported-networks
+    constructor()
+        Ownable(msg.sender)
+        UserCaring(0x78220f1C11D91f9B5F21536125201bD1aE5CC676)
+        Oracle(0xb83E47C2bC239B3bf370bc41e1459A34b41238D0, 1705,
+        0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000) {
+    }
 
     // The Shop initiates an exchange of loyalty points for the user data.
     // @user who is receiving the loyalty points
@@ -42,7 +52,7 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring {
         require(points > 0, "0 points");
         require(exchanges[msg.sender][receiptId].user == address(0), "exchange exist");
 
-        exchanges[msg.sender][receiptId] = Exchange(user, points, credentialId, ExchangeStatus.INIT);
+        exchanges[msg.sender][receiptId] = Exchange(user, points, credentialId, ExchangeStatus.INIT, 0);
 
         emit AnnounceLoyaltyPoints(msg.sender, user, receiptId, points, credentialId);
     }
@@ -55,13 +65,23 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring {
     // @shop address of the shop
     // @receiptId bytes32 a receipt id to identify order in off-chain
     // @userData is the zero-knowledge proof the user parameters in JSON format.
-    function submitPersonalData(address shop, bytes32 receiptId, string calldata) external {
-        require(exchanges[shop][receiptId].user == msg.sender, "not_authorized");
-        require(exchanges[shop][receiptId].status == ExchangeStatus.INIT, "invalid_status");
+    function submitPersonalData(address shop, bytes32 receiptId, string calldata userData) external {
+        require(bytes(shops[shop]).length > 0, "shop deleted");
+        Exchange storage exchange = exchanges[shop][receiptId];
 
-        exchanges[shop][receiptId].status = ExchangeStatus.SUBMIT;
+        require(exchange.user == msg.sender, "not_authorized");
+        require(exchange.status == ExchangeStatus.INIT, "invalid_status");
 
         // Todo send the data to a chainlink
+        string[] memory args = new string[](6);
+        args[0] = Hex.convert(msg.sender);
+        args[1] = Hex.convert(receiptId);
+        args[2] = Hex.convert(exchange.credentialId);
+        args[3] = userData;
+        args[4] = shops[shop];
+
+        exchange.requestId = sendRequest(args);
+        exchange.status = ExchangeStatus.SUBMIT;
 
         emit SubmitPersonalData(shop, msg.sender, receiptId);
     }
