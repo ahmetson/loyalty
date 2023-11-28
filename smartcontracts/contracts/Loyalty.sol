@@ -28,7 +28,7 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring, Oracle {
     mapping(address => mapping(bytes32 => Exchange)) public exchanges;
 
     event AnnounceLoyaltyPoints(address indexed shop, address indexed user, bytes32 receiptId, uint points, uint64 dataFormatId);
-    event SubmitPersonalData(address shop, address user, bytes32 receiptId);
+    event SubmitPersonalData(address shop, address user, bytes32 receiptId, bytes32 requestId);
     event RejectExchange(address shop, address user, bytes32 receiptId);
 
     // router for sepolia 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0. See the
@@ -67,6 +67,7 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring, Oracle {
     // @userData is the zero-knowledge proof the user parameters in JSON format.
     function submitPersonalData(address shop, bytes32 receiptId, string calldata userData) external {
         require(bytes(shops[shop]).length > 0, "shop deleted");
+
         Exchange storage exchange = exchanges[shop][receiptId];
 
         require(exchange.user == msg.sender, "not_authorized");
@@ -83,7 +84,7 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring, Oracle {
         exchange.requestId = sendRequest(args);
         exchange.status = ExchangeStatus.SUBMIT;
 
-        emit SubmitPersonalData(shop, msg.sender, receiptId);
+        emit SubmitPersonalData(shop, msg.sender, receiptId, exchange.requestId);
     }
 
     // User rejects the exchange initiated at announceLoyaltyPoints().
