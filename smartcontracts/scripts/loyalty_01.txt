@@ -1,0 +1,9 @@
+let userAddress = args[0];
+let receiptId = args[1];
+let credentialId = parseInt(args[2]);
+let userData = args[3];
+let url = args[4];
+
+let loyaltyPoint = receiptId.indexOf("1") > -1 ? 100 : 150;
+
+return Functions.encodeUint256(loyaltyPoint);
