@@ -12,6 +12,10 @@ const SEPOLIA_PRIVATE_KEY = process.env.HARDHAT_VAR_SEPOLIA_PRIVATE_KEY as strin
 const config: HardhatUserConfig = {
   etherscan: {
     apiKey: process.env.HARDHAT_VAR_ETHERSCAN as string,
+    enabled: true,
+  },
+  sourcify: {
+    enabled: true,
   },
   solidity: {
     version: "0.8.22",
