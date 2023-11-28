@@ -14,6 +14,11 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring, Oracle {
     // the confirmed is added by the company.
     enum ExchangeStatus{ INIT, REJECT, SUBMIT, CONFIRMED }
 
+    struct Request {
+        address shop;
+        bytes32 receiptId;
+    }
+
     struct Exchange {
         address user;
         uint points;
@@ -26,10 +31,12 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring, Oracle {
     mapping(address => mapping(address => uint)) public loyaltyPoints;
     // exchange the data for a loyalty points
     mapping(address => mapping(bytes32 => Exchange)) public exchanges;
+    mapping(bytes32 => Request) public requests;
 
     event AnnounceLoyaltyPoints(address indexed shop, address indexed user, bytes32 receiptId, uint points, uint64 dataFormatId);
     event SubmitPersonalData(address shop, address user, bytes32 receiptId, bytes32 requestId);
     event RejectExchange(address shop, address user, bytes32 receiptId);
+    event Exchanged(address shop, address user, bytes32 receiptId);
 
     // router for sepolia 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0. See the
     // https://docs.chain.link/chainlink-functions/supported-networks
@@ -84,6 +91,8 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring, Oracle {
         exchange.requestId = sendRequest(args);
         exchange.status = ExchangeStatus.SUBMIT;
 
+        requests[exchange.requestId] = Request(shop, receiptId);
+
         emit SubmitPersonalData(shop, msg.sender, receiptId, exchange.requestId);
     }
 
@@ -94,12 +103,36 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring, Oracle {
         Exchange storage exchange = exchanges[shop][receiptId];
 
         require(exchange.user == msg.sender, "not_authorized");
-        require(exchange.status == ExchangeStatus.INIT, "invalid_status");
+        require(exchange.status == ExchangeStatus.INIT, "invalid status");
 
         exchange.status = ExchangeStatus.REJECT;
 
         emit RejectExchange(shop, msg.sender, receiptId);
     }
+
+    function oracleCallback(bytes32 requestId, uint256 points) internal override {
+        Request storage request = requests[requestId];
+
+        require(request.shop != address(0), "shop is not set");
+
+        Exchange storage exchange = exchanges[request.shop][request.receiptId];
+        require(exchange.status == ExchangeStatus.SUBMIT, "invalid status");
+
+        require(exchange.points == points, "invalid points");
+
+        loyaltyPoints[request.shop][exchange.user] += points;
+
+        // Delete the request
+        address shop = request.shop;
+        bytes32 receiptId = request.receiptId;
+        delete requests[requestId];
+
+        // Finish the exchange
+        exchange.status = ExchangeStatus.CONFIRMED;
+
+        emit Exchanged(shop, exchange.user, receiptId);
+    }
+
 
     // Todo: add the method to spend the loyalty points in a cashback
 }
