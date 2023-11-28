@@ -4,8 +4,9 @@ pragma solidity ^0.8.9;
 import "./Ownable.sol";
 import "./Credential.sol";
 import "./Shop.sol";
+import "@turkmenson/user-caring/contracts/UserCaring.sol";
 
-contract Loyalty is Ownable, Credential, Shop {
+contract Loyalty is Ownable, Credential, Shop, UserCaring {
     // init right after announcement.
     // user may reject or submit the data.
     // the confirmed is added by the company.
@@ -27,7 +28,7 @@ contract Loyalty is Ownable, Credential, Shop {
     event SubmitPersonalData(address shop, address user, bytes32 receiptId);
     event RejectExchange(address shop, address user, bytes32 receiptId);
 
-    constructor() Ownable(msg.sender) {}
+    constructor() Ownable(msg.sender) UserCaring(0x78220f1C11D91f9B5F21536125201bD1aE5CC676) {}
 
     // The Shop initiates an exchange of loyalty points for the user data.
     // @user who is receiving the loyalty points
