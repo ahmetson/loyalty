@@ -1,8 +1,7 @@
-import { formatEther, parseEther } from "viem";
-import hre from "hardhat";
+import { ethers } from "hardhat";
 
 async function main() {
-  const loyalty = await hre.viem.deployContract("Loyalty", []);
+  const loyalty = await ethers.deployContract("Loyalty", []);
 
   console.log(
     `Loyalty deployed to ${loyalty.address}`
