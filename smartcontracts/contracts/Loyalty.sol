@@ -20,7 +20,6 @@ contract Loyalty is Ownable, Credential, Shop {
 
     // Company -> user -> loyalty points
     mapping(address => mapping(address => uint)) public loyaltyPoints;
-    mapping(address => mapping(uint => uint)) public productExpiration;
     // exchange the data for a loyalty points
     mapping(address => mapping(bytes32 => Exchange)) public exchanges;
 
