@@ -13,7 +13,12 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: process.env.HARDHAT_VAR_ETHERSCAN as string,
   },
-  solidity: "0.8.22",
+  solidity: {
+    version: "0.8.22",
+    settings: {
+      optimizer: {enabled: true, runs: 200}
+    }
+  },
   networks: {
     sepolia: {
       url: SEPOLIA_RPC,
