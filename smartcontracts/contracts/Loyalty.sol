@@ -29,14 +29,15 @@ contract Loyalty is Ownable, Credential, Shop {
 
     constructor() Ownable(msg.sender) {}
 
-    // The Shop announces a new exchange for the user data.
+    // The Shop initiates an exchange of loyalty points for the user data.
     // @user who is receiving the loyalty points
     // @receiptId is the event id that loyalty points given for. It's off-chain event id.
     // @points amount of loyalty points user receives
     // @dataFormatId the credential type the shop is asking for.
-    function announceLoyaltyPoints(address user, bytes32 receiptId, uint points, uint64 credentialId) external onlyShop validCredentialId(credentialId) {
-        require(user != address(0), "empty_user");
-        require(receiptId > 0, "receipt_id = 0");
+    function announceLoyaltyPoints(address user, bytes32 receiptId, uint points, uint64 credentialId)
+        external onlyShop validCredentialId(credentialId) {
+        require(user != address(0), "empty user");
+        require(receiptId > 0, "receipt id = 0");
         require(points > 0, "0 points");
         require(exchanges[msg.sender][receiptId].user == address(0), "exchange exist");
 
@@ -45,7 +46,11 @@ contract Loyalty is Ownable, Credential, Shop {
         emit AnnounceLoyaltyPoints(msg.sender, user, receiptId, points, credentialId);
     }
 
-    // Submit Data as a zero-knowledge
+    // User continues the exchange initiated at announceLoyaltyPoints.
+    // Here user submits the user data asked by the user.
+    // By submitting this data, user agrees to send his data in exchange for the loyalty points.
+    //
+    // The data is turned into submission until the oracles will not finalize them.
     // @shop address of the shop
     // @receiptId bytes32 a receipt id to identify order in off-chain
     // @userData is the zero-knowledge proof the user parameters in JSON format.
@@ -60,7 +65,7 @@ contract Loyalty is Ownable, Credential, Shop {
         emit SubmitPersonalData(shop, msg.sender, receiptId);
     }
 
-    // User rejects the exchange. No explanation of the reason.
+    // User rejects the exchange initiated at announceLoyaltyPoints().
     // @shop address of the shop
     // @receiptId bytes32 a receipt id to identify order in off-chain
     function rejectExchange(address shop, bytes32 receiptId) external {
@@ -71,4 +76,6 @@ contract Loyalty is Ownable, Credential, Shop {
 
         emit RejectExchange(shop, msg.sender, receiptId);
     }
+
+    // Todo: add the method to spend the loyalty points in a cashback
 }
