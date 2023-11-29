@@ -1,0 +1,28 @@
+let userAddress = args[0];
+let receiptId = args[1];
+let credentialId = parseInt(args[2]);
+let userData = args[3];
+let url = args[4];
+
+const apiResponse = await Functions.makeHttpRequest({
+    url: url,
+    method: "POST",
+    data: {
+        "user_address": userAddress,
+        "receipt_id": receiptId,
+        "credential_id": credentialId,
+        "user_data": userData,
+    },
+    headers: {
+        "Content-Type": "application/json"
+    }
+})
+
+
+if (apiResponse.error) {
+    throw Error(`Request failed: ${apiResponse.message}`)
+}
+
+let loyaltyPoints = apiResponse.data.loyalty_points;
+
+return Functions.encodeUint256(loyaltyPoints);

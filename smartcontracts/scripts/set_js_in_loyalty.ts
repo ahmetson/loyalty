@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 
 async function main() {
-    let address = `0x45E81C2cC9DbC085BB9624508AcD0E2104018928`;
+    let address = `0xE878FcDF55D4FdC42D97dceb6895ab7B699E36fc`;
     let hex = "0x315329244Ca9e2F9E5faB7181f4331f776bf369D";
     const Contract = await ethers.getContractFactory("Loyalty", {
         libraries: {

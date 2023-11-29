@@ -1,14 +1,7 @@
 import { ethers, network } from "hardhat";
 
 async function main() {
-  const hexLib = await ethers.deployContract("Hex", { });
-  console.log(`Waiting for a confirmation of hex deployment`);
-
-  let libRes = await hexLib.waitForDeployment();
-
-  let libAddr = await libRes.getAddress();
-  console.log(`Hex library deployed to ${libAddr}`);
-
+  const libAddr = "0x315329244Ca9e2F9E5faB7181f4331f776bf369D";
   const loyalty = await ethers.deployContract("Loyalty", [], {libraries: {"Hex": libAddr}});
   console.log('Waiting for a confirmation of Loyalty deployment');
 

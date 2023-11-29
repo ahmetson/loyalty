@@ -113,12 +113,18 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring, Oracle {
     function oracleCallback(bytes32 requestId, uint256 points) internal override {
         Request storage request = requests[requestId];
 
-        require(request.shop != address(0), "shop is not set");
+        // The oracle responds invalid data
+        if (request.shop == address(0)) {
+            return;
+        }
 
         Exchange storage exchange = exchanges[request.shop][request.receiptId];
-        require(exchange.status == ExchangeStatus.SUBMIT, "invalid status");
-
-        require(exchange.points == points, "invalid points");
+        // The oracle responds a duplicate responds
+        if (exchange.status != ExchangeStatus.SUBMIT) {
+            // Allow a duplicate request
+            delete requests[requestId];
+            return;
+        }
 
         loyaltyPoints[request.shop][exchange.user] += points;
 
