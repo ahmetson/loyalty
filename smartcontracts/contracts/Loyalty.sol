@@ -6,9 +6,8 @@ import "./Credential.sol";
 import "./Shop.sol";
 import "./Oracle.sol";
 import "./Hex.sol";
-import "@turkmenson/user-caring/contracts/UserCaring.sol";
 
-contract Loyalty is Ownable, Credential, Shop, UserCaring, Oracle {
+contract Loyalty is Ownable, Credential, Shop, Oracle {
     // init right after announcement.
     // user may reject or submit the data.
     // the confirmed is added by the company.
@@ -42,7 +41,6 @@ contract Loyalty is Ownable, Credential, Shop, UserCaring, Oracle {
     // https://docs.chain.link/chainlink-functions/supported-networks
     constructor()
         Ownable(msg.sender)
-        UserCaring(0x78220f1C11D91f9B5F21536125201bD1aE5CC676)
         Oracle(0xb83E47C2bC239B3bf370bc41e1459A34b41238D0, 1705,
         0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000) {
     }

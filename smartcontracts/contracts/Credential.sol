@@ -3,7 +3,7 @@ pragma solidity ^0.8.9;
 
 import "./Ownable.sol";
 
-// A utility smartcontract that handles tracks the credentials formats
+// A utility smartcontract that tracks the credential formats
 // to transfer between users and companies.
 //
 // The credentials are composed from two parts.
