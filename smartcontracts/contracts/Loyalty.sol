@@ -32,7 +32,7 @@ contract Loyalty is Ownable, Credential, Shop, Oracle, Hex {
     mapping(address => mapping(bytes32 => Exchange)) public exchanges;
     mapping(bytes32 => Request) public requests;
 
-    event AnnounceLoyaltyPoints(address indexed shop, address indexed user, bytes32 receiptId, uint points, uint64 dataFormatId);
+    event AnnounceLoyaltyPoints(address indexed shop, address indexed user, bytes32 receiptId, uint points, uint64 dataFormatId, bytes pubKey);
     event SubmitPersonalData(address shop, address user, bytes32 receiptId, bytes32 requestId);
     event RejectExchange(address shop, address user, bytes32 receiptId);
     event Exchanged(address shop, address user, bytes32 receiptId);
@@ -50,7 +50,7 @@ contract Loyalty is Ownable, Credential, Shop, Oracle, Hex {
     // @receiptId is the event id that loyalty points given for. It's off-chain event id.
     // @points amount of loyalty points user receives
     // @dataFormatId the credential type the shop is asking for.
-    function announceLoyaltyPoints(address user, bytes32 receiptId, uint points, uint64 credentialId)
+    function announceLoyaltyPoints(address user, bytes32 receiptId, uint points, uint64 credentialId, bytes calldata pubKey)
         external onlyShop validCredentialId(credentialId) {
         require(user != address(0), "empty user");
         require(receiptId > 0, "receipt id = 0");
@@ -59,7 +59,7 @@ contract Loyalty is Ownable, Credential, Shop, Oracle, Hex {
 
         exchanges[msg.sender][receiptId] = Exchange(user, points, credentialId, ExchangeStatus.INIT, 0);
 
-        emit AnnounceLoyaltyPoints(msg.sender, user, receiptId, points, credentialId);
+        emit AnnounceLoyaltyPoints(msg.sender, user, receiptId, points, credentialId, pubKey);
     }
 
     // User continues the exchange initiated at announceLoyaltyPoints.
@@ -80,9 +80,9 @@ contract Loyalty is Ownable, Credential, Shop, Oracle, Hex {
 
         // Todo send the data to a chainlink
         string[] memory args = new string[](6);
-        args[0] = Hex.convert(msg.sender);
-        args[1] = Hex.convert(receiptId);
-        args[2] = Hex.convert(exchange.credentialId);
+        args[0] = convert(msg.sender);
+        args[1] = convert(receiptId);
+        args[2] = convert(exchange.credentialId);
         args[3] = userData;
         args[4] = shops[shop];
 
@@ -136,7 +136,6 @@ contract Loyalty is Ownable, Credential, Shop, Oracle, Hex {
 
         emit Exchanged(shop, exchange.user, receiptId);
     }
-
 
     // Todo: add the method to spend the loyalty points in a cashback
 }
