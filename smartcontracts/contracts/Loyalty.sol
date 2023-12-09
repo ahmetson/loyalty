@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.22;
 
 import "./Ownable.sol";
 import "./Credential.sol";
@@ -7,7 +7,7 @@ import "./Shop.sol";
 import "./Oracle.sol";
 import "./Hex.sol";
 
-contract Loyalty is Ownable, Credential, Shop, Oracle {
+contract Loyalty is Ownable, Credential, Shop, Oracle, Hex {
     // init right after announcement.
     // user may reject or submit the data.
     // the confirmed is added by the company.

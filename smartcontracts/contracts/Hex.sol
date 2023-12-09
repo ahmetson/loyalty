@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-library Hex {
+contract Hex {
     // Taken from
     // https://www.appsloveworld.com/ethereum/32/convert-bytes-to-hexadecimal-string-in-solidity
     function convert(bytes32 buffer) public pure returns (string memory) {
