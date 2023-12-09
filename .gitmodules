@@ -1,0 +1,9 @@
+[submodule "smart-dhx"]
+	path = smart-dhx
+	url = https://github.com/robmuth/smart-dhx.git
+[submodule "company-backend"]
+	path = company-backend
+	url = https://github.com/enthuzzed/company-backend.git
+[submodule "loyalty-wallet"]
+	path = loyalty-wallet
+	url = https://github.com/ahmetson/loyalty-wallet.git
