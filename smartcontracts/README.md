@@ -52,3 +52,6 @@ Shop is any random address.
 Receipt is any random 32 bytes.
 And `userData` is the data in JSON representation of the zero knowledge proof.
 
+# Version 3
+Contract [0xC29f0A02d751374b0a92cEBecEb58800EB9a99eC](https://sepolia.etherscan.io/address/0xC29f0A02d751374b0a92cEBecEb58800EB9a99eC/)
+ABI: [Loyalty.json](./abi/contracts/Loyalty.sol/Loyalty.json)

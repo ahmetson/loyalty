@@ -1,0 +1,89 @@
+[
+  {
+    "inputs": [],
+    "name": "G",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "IV",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "P",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "_seed",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "generateA",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_a",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_A",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_a",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_B",
+        "type": "uint256"
+      }
+    ],
+    "name": "generateAExtB",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_AB",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
