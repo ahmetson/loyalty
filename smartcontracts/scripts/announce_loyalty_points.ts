@@ -7,7 +7,7 @@ async function main() {
 
     let accounts = await ethers.getSigners();
 
-    let user = accounts[0].address;
+    const user = accounts[0].address;
     const receiptId = Date.now().toString();
     const receiptIdStr = receiptId.length > 32 ? receiptId.substring(0, 32) : receiptId;
     // Convert receipt_id to bytes32 hash

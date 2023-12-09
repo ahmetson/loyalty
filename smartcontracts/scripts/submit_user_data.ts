@@ -23,7 +23,7 @@ async function main() {
     let accounts = await ethers.getSigners();
 
     const shop = accounts[0].address;
-    const receiptId = Uint8Array.from(Buffer.from("0x3137303231303335313830303600000000000000000000000000000000000000".substring(2), 'hex'));
+    const receiptId = Uint8Array.from(Buffer.from("0x30393132323331313439504d0000000000000000000000000000000000000000".substring(2), 'hex'));
 
     const anonData = {
         "id": 1,
